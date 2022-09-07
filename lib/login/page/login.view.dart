@@ -105,29 +105,33 @@ class _LoginViewState extends State<LoginView> {
                       padding: const EdgeInsets.symmetric(horizontal: 20.0),
                       child: Container(
                         height: 100,
-                        child: InputField(
-                            validator: (value) {
-                              return error.validateUsername(value.toString());
-                            },
-                            onChanged: (username) {
-                              formStore.setUsername(username);
-                            },
-                            hintText: 'Введи имя'),
+                        child: Observer(builder: (context) {
+                          return InputField(
+                              validationError: error.username,
+                              onChanged: (username) {
+                                formStore.setUsername(username);
+                                error.validateUsername(username);
+                              },
+                              hintText: 'Введи имя');
+                        }),
                       ),
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20.0),
                       child: Container(
                         height: 80,
-                        child: InputField(
-                          validator: (value) {
-                            return error.validatePassword(value.toString());
-                          },
-                          onChanged: formStore.setPassword,
-                          hintText: 'Введите Пароль',
-                          suffixIcon: Icon(Icons.remove_red_eye),
-                          suffixColor: AppColors.borderPurpleColor,
-                        ),
+                        child: Observer(builder: (context) {
+                          return InputField(
+                            validationError: error.password,
+                            onChanged: (password) {
+                              formStore.setPassword(password);
+                              error.validatePassword(password);
+                            },
+                            hintText: 'Введите Пароль',
+                            suffixIcon: Icon(Icons.remove_red_eye),
+                            suffixColor: AppColors.borderPurpleColor,
+                          );
+                        }),
                       ),
                     ),
                     Observer(
@@ -138,7 +142,7 @@ class _LoginViewState extends State<LoginView> {
                     ),
                     ButtonSuccess(
                       onPressed: () {
-                        if (!formKey.currentState!.validate()) {
+                        if (!error.validateStore()) {
                           return;
                         }
                         formStore.login();

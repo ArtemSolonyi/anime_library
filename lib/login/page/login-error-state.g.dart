@@ -99,6 +99,28 @@ mixin _$FormErrorState on _FormErrorState, Store {
   }
 
   @override
+  bool validateStore() {
+    final _$actionInfo = _$_FormErrorStateActionController.startAction(
+        name: '_FormErrorState.validateStore');
+    try {
+      return super.validateStore();
+    } finally {
+      _$_FormErrorStateActionController.endAction(_$actionInfo);
+    }
+  }
+
+  @override
+  bool validateRegisterStore() {
+    final _$actionInfo = _$_FormErrorStateActionController.startAction(
+        name: '_FormErrorState.validateRegisterStore');
+    try {
+      return super.validateRegisterStore();
+    } finally {
+      _$_FormErrorStateActionController.endAction(_$actionInfo);
+    }
+  }
+
+  @override
   String? validateEmail(String value) {
     final _$actionInfo = _$_FormErrorStateActionController.startAction(
         name: '_FormErrorState.validateEmail');

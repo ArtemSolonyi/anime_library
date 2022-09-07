@@ -1,12 +1,11 @@
-import 'package:anime_library/register/page/register_store.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_mobx/flutter_mobx.dart';
+import 'package:provider/provider.dart';
 
-import '../../login/page/login-error-state.dart';
 import '../../login/page/login-state.dart';
-import '../../utils/color.dart';
-import '../../widgets/button-purple.dart';
-import '../../widgets/input-field.dart';
+
+import 'RegisterPage.dart';
 
 class RegisterView extends StatefulWidget {
   const RegisterView({Key? key}) : super(key: key);
@@ -16,101 +15,71 @@ class RegisterView extends StatefulWidget {
 }
 
 class _RegisterViewState extends State<RegisterView> {
-  GlobalKey<FormState> formKey = new GlobalKey<FormState>();
-  final FormErrorState error = FormErrorState();
-  final FormStore formStore = FormStore();
+  @override
+  Widget build(BuildContext context) {
+    return Provider<FormStore>(
+        create: (_) => FormStore(), child: RegisterRedirect());
+  }
+}
+
+class RegisterRedirect extends StatelessWidget {
+  const RegisterRedirect({
+    Key? key,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final formStore = Provider.of<FormStore>(context);
     return Scaffold(
-      backgroundColor: const Color(0xFF100E19),
-      body: SafeArea(
-          child: Center(
-        child: Container(
-          width: 360,
-          padding: EdgeInsets.only(left: 20, right: 20, top: 15, bottom: 25),
-          decoration: BoxDecoration(
-              color: const Color(0xFF100E19),
-              border: Border.all(width: 2.0, color: AppColors.blueColor),
-              borderRadius: BorderRadius.circular(20)),
-          child: Form(
-            autovalidateMode: AutovalidateMode.onUserInteraction,
-            key: formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  children: [
-                    Text(
-                      'Регистрация',
-                      style: TextStyle(
-                          color: Color(0xFF645BA3),
-                          fontFamily: 'Montserrat',
-                          fontSize: 24,
-                          fontWeight: FontWeight.w700),
-                    ),
-                    SizedBox(
-                      height: 5,
-                    ),
-                    Text(
-                      'Привет, познакомимся?',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 10,
-                        fontFamily: 'Montserrat',
-                        color: Color(0xFFFFFFFF).withOpacity(0.2),
-                      ),
-                    ),
-                  ],
-                ),
-                InputField(
-                    hintText: 'Придумай имя',
-                    validator: (value) {
-                      return error.validateUsername(value.toString());
-                    },
-                    onChanged: formStore.setUsername),
-                SizedBox(
-                  height: 30,
-                ),
-                InputField(
-                    hintText: 'Почта',
-                    validator: (value) {
-                      return error.validateEmail(value.toString());
-                    },
-                    onChanged: formStore.setEmail),
-                SizedBox(
-                  height: 30,
-                ),
-                InputField(
-                  hintText: 'Пароль',
-                  validator: (value) {
-                    return error.validatePassword(value.toString());
-                  },
-                  onChanged: formStore.setUsername,
-                ),
-                SizedBox(
-                  height: 30,
-                ),
-                InputField(
-                  hintText: 'Ты робот?',
-                  onChanged: (String text) {},
-                ),
-                SizedBox(
-                  height: 30,
-                ),
-                ButtonPurple(
-                    height: 40,
-                    width: 250,
-                    buttonText: "Зарегистрироваться",
-                    onPressed: () {
-                      formStore.login();
-                    }),
-              ],
-            ),
-          ),
+      backgroundColor: Color(0xFF100E19),
+      body: Observer(
+        builder: (_) {
+          if (formStore.statusCode == 200) {
+            return BLockConfirmEmail();
+          }
+          return RegisterPage();
+        },
+      ),
+    );
+  }
+}
+
+class BLockConfirmEmail extends StatelessWidget {
+  const BLockConfirmEmail({
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Container(
+        height: 86,
+        width: 240,
+        padding: EdgeInsets.only(top: 15),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(width: 2, color: Color(0xFF1F1B2E)),
         ),
-      )),
+        child: Column(
+          children: [
+            Text(
+              'Подтверди почту',
+              style: TextStyle(
+                color: Color(0xFF645BA3),
+                fontSize: 20,
+                fontFamily: 'Montserrat',
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 15),
+            Text(
+              'Или я не смогу тебя впустить...',
+              style: TextStyle(
+                  color: Color(0xFFFFFFFF).withOpacity(0.2), fontSize: 10),
+            )
+          ],
+        ),
+      ),
     );
   }
 }

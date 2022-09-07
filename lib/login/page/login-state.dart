@@ -2,6 +2,7 @@ import 'package:anime_library/repository/authentication.dart';
 import 'package:mobx/mobx.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../dtos/authentication-response.dto.dart';
 import '../../dtos/tokens.dto.dart';
 import '../../locator/locator.dart';
 
@@ -22,6 +23,9 @@ abstract class _FormStore with Store {
   String errorMessage = '';
   @observable
   int statusCode = 0;
+  @observable
+  String tempKey = '';
+
   @action
   void setUsername(String value) {
     username = value;
@@ -39,12 +43,21 @@ abstract class _FormStore with Store {
 
   @action
   void setStatusCode(int statusCodes) {
+    print('status $statusCodes');
     statusCode = statusCodes;
   }
 
   @action
+  void setPending(bool pending) {}
+
+  @action
   void setEmail(String value) {
     email = value;
+  }
+
+  @action
+  void setTempkey(String value) {
+    tempKey = value;
   }
 
   @action
@@ -57,6 +70,22 @@ abstract class _FormStore with Store {
     loginData
       ..onData((data) async => await setTokens(data.tokens))
       ..onError((error) => setError(error.message));
+  }
+
+  @action
+  Future<void> refreshToken() async {
+    pending = true;
+  }
+
+  @action
+  Future<void> activationEmail(String tempKey) async {
+    pending = true;
+    setError('');
+    final registerData =
+        await getIt.get<AuthenticationRepository>().activationEmail(tempKey);
+    registerData
+      ..onData((data) async => await setTokensAndSetStatusCode(data))
+      ..onError((error) => setError(error.message));
     pending = false;
   }
 
@@ -68,9 +97,14 @@ abstract class _FormStore with Store {
         .get<AuthenticationRepository>()
         .registerUser(username, email, password);
     registerData
-      // ..onData((data) async => await setStatusCode(data.statusCode))
+      ..onData((data) => setStatusCode(data.statusCode))
       ..onError((error) => setError(error.message));
     pending = false;
+  }
+
+  Future<void> setTokensAndSetStatusCode(AuthenticationResponse data) async {
+    setTokens(data.tokens);
+    setStatusCode(200);
   }
 
   Future<void> setTokens(Tokens data) async {

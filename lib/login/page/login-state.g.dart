@@ -87,12 +87,68 @@ mixin _$FormStore on _FormStore, Store {
     });
   }
 
+  late final _$statusCodeAtom =
+      Atom(name: '_FormStore.statusCode', context: context);
+
+  @override
+  int get statusCode {
+    _$statusCodeAtom.reportRead();
+    return super.statusCode;
+  }
+
+  @override
+  set statusCode(int value) {
+    _$statusCodeAtom.reportWrite(value, super.statusCode, () {
+      super.statusCode = value;
+    });
+  }
+
+  late final _$tempKeyAtom = Atom(name: '_FormStore.tempKey', context: context);
+
+  @override
+  String get tempKey {
+    _$tempKeyAtom.reportRead();
+    return super.tempKey;
+  }
+
+  @override
+  set tempKey(String value) {
+    _$tempKeyAtom.reportWrite(value, super.tempKey, () {
+      super.tempKey = value;
+    });
+  }
+
   late final _$loginAsyncAction =
       AsyncAction('_FormStore.login', context: context);
 
   @override
   Future<void> login() {
     return _$loginAsyncAction.run(() => super.login());
+  }
+
+  late final _$refreshTokenAsyncAction =
+      AsyncAction('_FormStore.refreshToken', context: context);
+
+  @override
+  Future<void> refreshToken() {
+    return _$refreshTokenAsyncAction.run(() => super.refreshToken());
+  }
+
+  late final _$activationEmailAsyncAction =
+      AsyncAction('_FormStore.activationEmail', context: context);
+
+  @override
+  Future<void> activationEmail(String tempKey) {
+    return _$activationEmailAsyncAction
+        .run(() => super.activationEmail(tempKey));
+  }
+
+  late final _$registerAsyncAction =
+      AsyncAction('_FormStore.register', context: context);
+
+  @override
+  Future<void> register() {
+    return _$registerAsyncAction.run(() => super.register());
   }
 
   late final _$_FormStoreActionController =
@@ -132,11 +188,44 @@ mixin _$FormStore on _FormStore, Store {
   }
 
   @override
+  void setStatusCode(int statusCodes) {
+    final _$actionInfo = _$_FormStoreActionController.startAction(
+        name: '_FormStore.setStatusCode');
+    try {
+      return super.setStatusCode(statusCodes);
+    } finally {
+      _$_FormStoreActionController.endAction(_$actionInfo);
+    }
+  }
+
+  @override
+  void setPending(bool pending) {
+    final _$actionInfo =
+        _$_FormStoreActionController.startAction(name: '_FormStore.setPending');
+    try {
+      return super.setPending(pending);
+    } finally {
+      _$_FormStoreActionController.endAction(_$actionInfo);
+    }
+  }
+
+  @override
   void setEmail(String value) {
     final _$actionInfo =
         _$_FormStoreActionController.startAction(name: '_FormStore.setEmail');
     try {
       return super.setEmail(value);
+    } finally {
+      _$_FormStoreActionController.endAction(_$actionInfo);
+    }
+  }
+
+  @override
+  void setTempkey(String value) {
+    final _$actionInfo =
+        _$_FormStoreActionController.startAction(name: '_FormStore.setTempkey');
+    try {
+      return super.setTempkey(value);
     } finally {
       _$_FormStoreActionController.endAction(_$actionInfo);
     }
@@ -149,7 +238,9 @@ pending: ${pending},
 username: ${username},
 email: ${email},
 password: ${password},
-errorMessage: ${errorMessage}
+errorMessage: ${errorMessage},
+statusCode: ${statusCode},
+tempKey: ${tempKey}
     ''';
   }
 }

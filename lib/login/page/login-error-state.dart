@@ -19,35 +19,48 @@ abstract class _FormErrorState with Store {
   @action
   String? validateUsername(String value) {
     if (value.length < 3) {
-      return 'Username must be longer than or equal to 3 characters';
+      username = 'Username must be longer than or equal to 3 characters';
     } else if (value.length > 18) {
-      return 'Username must be less than or equal to 18 characters';
+      username = 'Username must be less than or equal to 18 characters';
     } else if (value.isEmpty) {
-      return 'Username must be blank';
+      username = 'Username must be blank';
+    } else {
+      username = "";
     }
-    return null;
   }
 
   @action
   String? validatePassword(String value) {
     if (value.length < 7) {
-      return 'Password must be longer than or equal to 7 characters';
+      password = 'Password must be longer than or equal to 7 characters';
     } else if (value.isEmpty) {
-      return 'Password must be blank';
+      password = 'Password must be blank';
+    } else {
+      password = "";
     }
-    return null;
+  }
+
+  @action
+  bool validateStore() {
+    return password == "" && username == "";
+  }
+
+  @action
+  bool validateRegisterStore() {
+    return password == "" && email == "" && username == "";
   }
 
   @action
   String? validateEmail(String value) {
     if (value.length < 5) {
-      return 'Email must be blank in format email';
+      email = 'Email must be blank in format email';
     } else if (value.isEmpty) {
-      return 'Email must be blank';
+      email = 'Email must be blank';
     } else if (!isEmail(value)) {
-      return 'Email must be blank in format email';
+      email = 'Email must be blank in format email';
+    } else {
+      email = "";
     }
-    return null;
   }
 
   @action
