@@ -1,29 +1,67 @@
-import 'package:anime_library/dtos/authentication-response.dto.dart';
-import 'package:anime_library/repository/authentication.dart';
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../dtos/authentication-response.dto.dart';
+import '../dtos/error_dto.dart';
+import '../dtos/tokens.dto.dart';
 import '../locator/locator.dart';
 
 typedef MakeRequest = Future<Response> Function(Dio dio);
 typedef OnSuccess<T> = T Function(Response response);
 typedef OnError<T> = T Function(DioError dioError);
 
-// class CustomInterceptors extends Interceptor {
-//   @override
-//   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
-//     print('REQUEST[${options.method}] => PATH: ${options.path}');
-//     return super.onRequest(options, handler);
-//   }
-// }
 class DioClient {
-  late Dio dio;
+  late final Dio dio;
 
   DioClient() {
-    dio = Dio(BaseOptions(baseUrl: 'http://localhost:6004/api/v1/'));
+    dio = getIt.get<Dio>();
+    dio.options.baseUrl = 'http://localhost:6004/api/v1';
   }
 
-  Dio get getInstance {
+  addInterceptor() {
+    dio.interceptors.add(InterceptorsWrapper(onRequest:
+        (RequestOptions options, RequestInterceptorHandler handler) async {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      options.headers['Authorization'] = prefs.getString('accessToken');
+      handler.next(options);
+    }, onError: (err, handler) async {
+      bool retry = false;
+      if (err.response?.statusCode == 401 && !retry) {
+        retry = true;
+        SharedPreferences prefs = await getIt.getAsync<SharedPreferences>();
+        final RequestOptions? options = err.response?.requestOptions;
+        final data = await request<AuthenticationResponse, ErrorDto>(
+            makeRequest: (dio) => dio.post('/auth/refresh',
+                data: {'refreshToken': prefs.get('refreshToken')}),
+            onSuccess: (response) =>
+                AuthenticationResponse.fromJson(response.data),
+            onError: (error) => ErrorDto.fromJson(error.response?.data));
+        data
+          ..onData((data) {
+            print('${data.tokens.accessToken} qqqqqqqqqqq');
+            prefs.remove('accessToken');
+            prefs.remove('refreshToken');
+            prefs.setString('accessToken', data.tokens.accessToken);
+            prefs.setString('refreshToken', data.tokens.refreshToken);
+          })
+          ..onError((error) => print(error.message));
+        err.requestOptions.headers['Authorization'] = prefs.get('accessToken');
+        final response = await dio.request(err.requestOptions.path,
+            cancelToken: err.requestOptions.cancelToken,
+            data: err.requestOptions.data,
+            queryParameters: err.requestOptions.queryParameters,
+            options: Options(
+              method: err.requestOptions.method,
+              headers: err.requestOptions.headers,
+            ));
+        return handler.resolve(response);
+      }
+      return handler.next(err);
+    }));
+    return this;
+  }
+
+  get instance {
     return dio;
   }
 }
@@ -34,57 +72,10 @@ Future<Result<T, E>> request<T, E>({
   required OnError<E> onError,
 }) async {
   try {
-    final response = await makeRequest(getIt.get<DioClient>().getInstance);
+    final response = await makeRequest(getIt.get<DioClient>().instance);
     return Result.success(onSuccess(response));
   } on DioError catch (e) {
     return Result.error(onError(e));
-  }
-}
-
-class CustomInterceptor extends Interceptor {
-  Dio api = getIt.get<DioClient>().getInstance;
-  AuthenticationRepository ar = getIt.get<AuthenticationRepository>();
-  @override
-  void onRequest(
-      RequestOptions options, RequestInterceptorHandler handler) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    options.headers['Authorization'] = prefs.getString('accessToken');
-    handler.next(options);
-  }
-
-  @override
-  void onError(err, handler) async {
-    bool retry;
-    if (err.response?.statusCode == 401) {
-      retry = true;
-      await ar.refresh();
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      err.requestOptions.headers['Authorization'] =
-          prefs.getString('accessToken');
-      api.request(err.requestOptions.path,
-          cancelToken: err.requestOptions.cancelToken,
-          data: err.requestOptions.data,
-          onReceiveProgress: err.requestOptions.onReceiveProgress,
-          onSendProgress: err.requestOptions.onReceiveProgress,
-          queryParameters: err.requestOptions.queryParameters,
-          options: Options(
-            contentType: err.requestOptions.contentType,
-            extra: err.requestOptions.extra,
-            followRedirects: err.requestOptions.followRedirects,
-            headers: err.requestOptions.headers,
-            listFormat: err.requestOptions.listFormat,
-            maxRedirects: err.requestOptions.maxRedirects,
-            method: err.requestOptions.method,
-            receiveDataWhenStatusError:
-                err.requestOptions.receiveDataWhenStatusError,
-            receiveTimeout: err.requestOptions.receiveTimeout,
-            responseDecoder: err.requestOptions.responseDecoder,
-            requestEncoder: err.requestOptions.requestEncoder,
-            responseType: err.requestOptions.responseType,
-            sendTimeout: err.requestOptions.sendTimeout,
-            validateStatus: err.requestOptions.validateStatus,
-          ));
-    }
   }
 }
 

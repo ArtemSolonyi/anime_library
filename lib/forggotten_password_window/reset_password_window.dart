@@ -2,6 +2,12 @@ import 'package:anime_library/widgets/button.success.dart';
 import 'package:anime_library/widgets/input-field.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_mobx/flutter_mobx.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+
+import '../settings/settings_error_store.dart';
+import '../settings/settings_store.dart';
 
 class ResetPasswordWindow extends StatefulWidget {
   const ResetPasswordWindow({Key? key}) : super(key: key);
@@ -11,6 +17,36 @@ class ResetPasswordWindow extends StatefulWidget {
 }
 
 class _ResetPasswordWindowState extends State<ResetPasswordWindow> {
+  final SettingsErrorStore settingsErrorState = SettingsErrorStore();
+  @override
+  Widget build(BuildContext context) {
+    final settingsStore = Provider.of<SettingsStore>(context);
+    return Scaffold(
+      backgroundColor: Color(0xFF100E19),
+      body: Observer(
+        builder: (_) {
+          if (settingsStore.passwordSuccessfullyChanged == true) {
+            context.go('/home');
+          }
+          return ResetPassword(
+              settingsErrorState: settingsErrorState,
+              settingsStore: settingsStore);
+        },
+      ),
+    );
+  }
+}
+
+class ResetPassword extends StatelessWidget {
+  const ResetPassword({
+    Key? key,
+    required this.settingsErrorState,
+    required this.settingsStore,
+  }) : super(key: key);
+
+  final SettingsErrorStore settingsErrorState;
+  final SettingsStore settingsStore;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -26,7 +62,7 @@ class _ResetPasswordWindowState extends State<ResetPasswordWindow> {
         ),
         child: Column(
           children: [
-            Text('Сброс пароля',
+            const Text('Сброс пароля',
                 style: TextStyle(
                     color: Color(0xFF645BA3),
                     fontSize: 24,
@@ -38,19 +74,33 @@ class _ResetPasswordWindowState extends State<ResetPasswordWindow> {
                     fontSize: 10,
                     fontWeight: FontWeight.w700,
                     fontFamily: 'Montserrat')),
-            SizedBox(height: 25),
+            const SizedBox(height: 25),
             InputField(
                 validationError: null,
                 hintText: 'Придумай новый пароль',
-                suffixIcon: Icon(Icons.remove_red_eye),
-                onChanged: (p) {}),
-            InputField(
-                validationError: null,
-                suffixIcon: Icon(Icons.remove_red_eye),
-                hintText: 'Придумай новый пароль',
-                onChanged: (p) {}),
+                suffixIcon: const Icon(Icons.remove_red_eye),
+                onChanged: (firstPassword) {
+                  settingsErrorState.setFirstPassword(firstPassword);
+                }),
+            Observer(builder: (_) {
+              return InputField(
+                  validationError: !settingsErrorState.isConfirmationPassword
+                      ? "Passwords do not match"
+                      : '',
+                  suffixIcon: const Icon(Icons.remove_red_eye),
+                  hintText: 'Подтверди новый пароль',
+                  onChanged: (passwordConfirmation) {
+                    settingsErrorState
+                        .setPasswordConfirmation(passwordConfirmation);
+                  });
+            }),
             ButtonSuccess(
-                onPressed: () {},
+                onPressed: () {
+                  if (settingsErrorState.isConfirmationPassword) {
+                    settingsStore.changePassword(
+                        settingsErrorState.passwordConfirmation);
+                  }
+                },
                 buttonText: 'Восстановить',
                 width: 200,
                 height: 40)

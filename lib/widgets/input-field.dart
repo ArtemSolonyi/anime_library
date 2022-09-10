@@ -50,33 +50,13 @@ class InputField extends StatelessWidget {
               borderRadius: BorderRadius.circular(7),
             ),
             child: Center(
-              child: TextFormField(
-                controller: textEditingController,
-                maxLength: maxLength,
-                onChanged: onChanged,
-                style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white.withOpacity(0.8)),
-                textAlign: TextAlign.center,
-                decoration: InputDecoration(
-                  contentPadding: EdgeInsets.only(bottom: 13),
-                  border: InputBorder.none,
-                  constraints: BoxConstraints(maxHeight: 40, minHeight: 40),
-                  focusedBorder: InputBorder.none,
-                  disabledBorder: InputBorder.none,
-                  enabledBorder: InputBorder.none,
+              child: TextInputField(
+                  textEditingController: textEditingController,
+                  maxLength: maxLength,
+                  onChanged: onChanged,
                   hintText: hintText,
-                  suffixIconColor: Colors.purple,
                   suffixIcon: suffixIcon,
-                  prefixIcon: prefixIcon,
-                  hintStyle: TextStyle(
-                      color: Colors.white.withOpacity(0.4),
-                      fontWeight: FontWeight.w700,
-                      fontSize: 15,
-                      fontFamily: 'Montserrat'),
-                ),
-              ),
+                  prefixIcon: prefixIcon),
             ),
           ),
           SizedBox(
@@ -92,6 +72,56 @@ class InputField extends StatelessWidget {
                   fontWeight: FontWeight.w700),
             )
         ],
+      ),
+    );
+  }
+}
+
+class TextInputField extends StatelessWidget {
+  const TextInputField({
+    Key? key,
+    this.textEditingController,
+    this.maxLength,
+    required this.onChanged,
+    required this.hintText,
+    this.suffixIcon,
+    this.prefixIcon,
+  }) : super(key: key);
+
+  final TextEditingController? textEditingController;
+  final int? maxLength;
+  final Function(String text) onChanged;
+  final String hintText;
+  final Icon? suffixIcon;
+  final Icon? prefixIcon;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextFormField(
+      controller: textEditingController,
+      maxLength: maxLength,
+      onChanged: onChanged,
+      style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+          color: Colors.white.withOpacity(0.8)),
+      textAlign: TextAlign.center,
+      decoration: InputDecoration(
+        contentPadding: EdgeInsets.only(bottom: 13),
+        border: InputBorder.none,
+        constraints: BoxConstraints(maxHeight: 40, minHeight: 40),
+        focusedBorder: InputBorder.none,
+        disabledBorder: InputBorder.none,
+        enabledBorder: InputBorder.none,
+        hintText: hintText,
+        suffixIconColor: Colors.purple,
+        suffixIcon: suffixIcon,
+        prefixIcon: prefixIcon,
+        hintStyle: TextStyle(
+            color: Colors.white.withOpacity(0.4),
+            fontWeight: FontWeight.w700,
+            fontSize: 15,
+            fontFamily: 'Montserrat'),
       ),
     );
   }

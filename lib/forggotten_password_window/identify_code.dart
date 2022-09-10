@@ -1,10 +1,13 @@
+import 'package:anime_library/forggotten_password_window/reset_password_window.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
+import 'package:provider/provider.dart';
 
+import '../settings/settings_store.dart';
 import '../utils/color.dart';
-import '../widgets/input-field.dart';
 
 class IdentifyCode extends StatefulWidget {
   const IdentifyCode({Key? key}) : super(key: key);
@@ -16,6 +19,26 @@ class IdentifyCode extends StatefulWidget {
 class _IdentifyCodeState extends State<IdentifyCode> {
   @override
   Widget build(BuildContext context) {
+    final settingsStore = Provider.of<SettingsStore>(context);
+    return Scaffold(
+        backgroundColor: Color(0xFF100E19),
+        body: Observer(builder: (_) {
+          if (settingsStore.message == 'Code success confirm') {
+            return ResetPasswordWindow();
+          }
+          return InputPinCode();
+        }));
+  }
+}
+
+class InputPinCode extends StatelessWidget {
+  const InputPinCode({
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final settingsStore = Provider.of<SettingsStore>(context);
     return Scaffold(
       backgroundColor: Color(0xFF100E19),
       body: Center(
@@ -67,7 +90,12 @@ class _IdentifyCodeState extends State<IdentifyCode> {
                         fontSize: 24,
                         fontWeight: FontWeight.w700,
                         color: Colors.white.withOpacity(0.8)),
-                    onChanged: (h) {},
+                    onChanged: (pin) {
+                      if (pin.length == 4) {
+                        settingsStore.sendPinCodeForChange(int.parse(pin));
+                      }
+                      return;
+                    },
                     length: 4,
                     appContext: context,
                   ))

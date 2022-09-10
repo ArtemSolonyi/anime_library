@@ -76,8 +76,8 @@ mixin _$ProfileStore on _ProfileStore, Store {
       AsyncAction('_ProfileStore.getProfiles', context: context);
 
   @override
-  Future<void> getProfiles() {
-    return _$getProfilesAsyncAction.run(() => super.getProfiles());
+  Future<void> getProfiles(String username) {
+    return _$getProfilesAsyncAction.run(() => super.getProfiles(username));
   }
 
   @override

@@ -16,3 +16,19 @@ class User {
   factory User.fromJson(Map<String, Object?> json) => _$UserFromJson(json);
   Map<String, dynamic> toJson() => _$UserToJson(this);
 }
+
+@JsonSerializable()
+class UserProfile {
+  String nickname;
+  String username;
+  String avatar;
+
+  UserProfile({
+    required this.username,
+    required this.nickname,
+    required this.avatar,
+  });
+  factory UserProfile.fromJson(Map<String, Object?> json) =>
+      _$UserProfileFromJson(json);
+  Map<String, dynamic> toJson() => _$UserProfileToJson(this);
+}

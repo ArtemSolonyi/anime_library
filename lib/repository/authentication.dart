@@ -5,6 +5,7 @@ import '../dtos/authentication-response.dto.dart';
 import '../dtos/error_dto.dart';
 import '../dtos/registration-response.dto.dart';
 import '../dtos/tokens.dto.dart';
+import '../dtos/user.dto.dart';
 import '../utils/network.dart';
 
 class AuthenticationRepository {
@@ -36,15 +37,12 @@ class AuthenticationRepository {
       ..onError((error) => print('error ${error.message}'));
   }
 
-  Future<Result<RegistrationResponse, ErrorDto>> getProfile() async {
-    final result = await request<RegistrationResponse, ErrorDto>(
-        makeRequest: (dio) => dio.get('/'),
-        onSuccess: (response) => RegistrationResponse.fromJson(response.data),
+  Future<Result<UserProfile, ErrorDto>> getProfile(String username) async {
+    final result = await request<UserProfile, ErrorDto>(
+        makeRequest: (dio) => dio.get('/profile/?username=$username'),
+        onSuccess: (response) => UserProfile.fromJson(response.data),
         onError: (error) => ErrorDto.fromJson(error.response?.data));
-    print(result);
-    return result
-      ..onData((data) => print('success ${data.statusCode}'))
-      ..onError((error) => print('error ${error.message}'));
+    return result;
   }
 
   Future<Result<AuthenticationResponse, ErrorDto>> activationEmail(

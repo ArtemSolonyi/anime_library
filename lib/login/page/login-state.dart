@@ -68,7 +68,7 @@ abstract class _FormStore with Store {
         .get<AuthenticationRepository>()
         .loginUser(username, password);
     loginData
-      ..onData((data) async => await setTokens(data.tokens))
+      ..onData((data) async => await setTokensAndSetStatusCode(data, 201))
       ..onError((error) => setError(error.message));
   }
 
@@ -84,7 +84,7 @@ abstract class _FormStore with Store {
     final registerData =
         await getIt.get<AuthenticationRepository>().activationEmail(tempKey);
     registerData
-      ..onData((data) async => await setTokensAndSetStatusCode(data))
+      ..onData((data) async => await setTokensAndSetStatusCode(data, 200))
       ..onError((error) => setError(error.message));
     pending = false;
   }
@@ -102,13 +102,14 @@ abstract class _FormStore with Store {
     pending = false;
   }
 
-  Future<void> setTokensAndSetStatusCode(AuthenticationResponse data) async {
+  Future<void> setTokensAndSetStatusCode(
+      AuthenticationResponse data, int statusCode) async {
     setTokens(data.tokens);
-    setStatusCode(200);
+    setStatusCode(statusCode);
   }
 
   Future<void> setTokens(Tokens data) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
+    SharedPreferences prefs = await getIt.getAsync<SharedPreferences>();
     prefs.setString('accessToken', data.accessToken);
     prefs.setString('refreshToken', data.refreshToken);
   }

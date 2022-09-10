@@ -1,9 +1,6 @@
 import 'package:anime_library/repository/authentication.dart';
 import 'package:mobx/mobx.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../dtos/authentication-response.dto.dart';
-import '../../dtos/tokens.dto.dart';
 import '../../locator/locator.dart';
 
 part 'profile_store.g.dart';
@@ -20,7 +17,11 @@ abstract class _ProfileStore with Store {
   @observable
   late bool pending;
   @action
-  Future<void> getProfiles() async {
-    final getProfile = await getIt.get<AuthenticationRepository>().getProfile();
+  Future<void> getProfiles(String username) async {
+    final getProfile =
+        await getIt.get<AuthenticationRepository>().getProfile(username);
+    getProfile
+      ..onData((data) => print(data.username))
+      ..onError((e) => print(e.statusCode));
   }
 }

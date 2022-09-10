@@ -26,10 +26,10 @@ class _LoginViewState extends State<LoginView> {
   @override
   void initState() {
     super.initState();
-    disposer = reaction<String>(
-      (_) => formStore.errorMessage,
-      (msg) {
-        if (msg.isNotEmpty) {
+    disposer = reaction<int>(
+      (_) => formStore.statusCode,
+      (statusCode) {
+        if (statusCode != 201) {
           return;
         }
         context.go('/home');
@@ -153,6 +153,24 @@ class _LoginViewState extends State<LoginView> {
                     ),
                     const SizedBox(
                       height: 25,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 15, bottom: 10),
+                      child: Row(children: [
+                        InkWell(
+                          onTap: () {
+                            context.go('/reset-password');
+                          },
+                          child: Text(
+                            'Забыл пароль',
+                            style: TextStyle(
+                                color: Color(0xFFECC153),
+                                fontFamily: 'Montserrat',
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700),
+                          ),
+                        )
+                      ]),
                     )
                   ],
                 ),
